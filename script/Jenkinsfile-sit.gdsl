@@ -1,0 +1,98 @@
+#!/usr/bin/env groovy
+pipeline {
+
+
+    agent any
+
+    environment {
+        CC = 'lang'
+    }
+
+    options {
+        timeout(time: 900, unit: 'SECONDS')
+        timestamps()
+    }
+
+
+    stages {
+
+        stage('Check') {
+            steps {
+
+                echo 'Checking........'
+                echo '当前目录'
+                sh 'pwd'
+                echo 'Java Version'
+                sh 'java -version'
+                echo 'Maven Version'
+                sh 'echo $M2_HOME'
+                sh 'mvn -version'
+            }
+
+        }
+
+        stage('Build') {
+            steps {
+                echo 'Building........'
+                sh 'mvn clean package -Dmaven.test.skip=true'
+            }
+        }
+
+
+        
+        stage('Deploy') {
+
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'dakai', passwordVariable: 'password', usernameVariable: 'username')]){
+                    echo 'Deploy........'
+                    sh 'pwd'
+                    sh 'cf login -a api.sys.pcfdemo.com --skip-ssl-validation -u $username -p $password'
+                    sh 'cf target -o demo -s sit'
+                     sh 'cf push -f crl-as-sjpt-application/manifest-sit.yml'
+                }
+            }}
+            
+
+        stage('Check  Health'){
+
+            steps{
+
+                script{
+
+                    echo "执行健康检查！！！"
+                    guid = sh(script: "cf app crl-as-sjpt --guid", returnStdout: true)
+                    echo guid
+                    shellStr = sh(script: "cf curl /v2/apps/"+guid, returnStdout: true)
+                    echo shellStr
+                    def jsonObject = readJSON text: shellStr.toString()
+                    def state= jsonObject.entity.state.toString()
+                    if (state!="STARTED"){
+                         throw new RuntimeException("程序运行异常 其状态为:" + state)
+                    }else {
+                        echo "程序启动成功,健康检测成功"
+                    }
+                }
+            }
+
+        }
+    }
+
+
+    post {
+        always {
+            echo 'This will always run to delete  build  workspace'
+
+            deleteDir()
+        }
+        success {
+            echo '构建成功！'
+
+
+        }
+        failure {
+            echo '构建失败或应用不稳定！'
+
+        }
+
+    }
+}

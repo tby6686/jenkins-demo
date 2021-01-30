@@ -1,0 +1,53 @@
+node("master"){
+	step([$class: 'WsCleanup'])
+
+	// 工程名
+	def projectName='eureka-server'
+	// 工程部署目标服务器ip
+	def deployIp='192.168.0.128'
+	// 工程启动端口
+	def port='8001'
+	// 环境
+	def env='master'
+	// 工程路径
+	def basePath='/home/cloud'
+
+	stage('Checkout'){
+		checkout([$class: 'GitSCM', branches: [[name: '*/master']],  doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'b13a6e27-0356-4fd6-9589-5aa0f3b4ccf2', url: 'http://10.255.11.12:8083/hsxt/sjpt/crl-as-sjpt.git']]])
+	}
+
+	stage('Archive Artefact'){
+	    checkChange()
+		sh "mvn clean package -Dmaven.test.skip=true"
+	}
+
+    stage('Deploy to $env'){
+        sh "if [ ! -d $basePath ]; then mkdir $basePath; fi "
+        sh "rm -rf $basePath/$projectName-$env/ "
+        sh "cp -r ./ $basePath/$projectName-$env/ "
+        withEnv(['JENKINS_NODE_COOKIE=dontKillMe']){
+            sh "cd $basePath/$projectName-$env/script; chmod +x go.sh; ./go.sh $env $port $projectName "
+        }
+    }
+}
+    @NonCPS
+    def checkChange() {
+        def changeLogSets = currentBuild.changeSets
+        def flag = false
+        def changeString = ""
+        echo "共 ${changeLogSets.size()}个版本发生变化，变化文件列表：\n"
+        for (int i = 0; i < changeLogSets.size(); i++) {
+            def entries = changeLogSets[i].items
+            for (int j = 0; j < entries.length; j++) {
+                 def entry = entries[j]
+                truncated_msg = entry.msg.take(2048)
+                echo "--${truncated_msg}  [${entry.author}]\n"
+                def files = new ArrayList(entry.affectedFiles)
+                    for (int k = 0; k < files.size(); k++) {
+                        def file = files[k]
+                        changeString +=  " ${file.editType.name} ${file.path}\n"
+                     }
+             }
+         }
+             echo "${changeString}\n"
+         }
