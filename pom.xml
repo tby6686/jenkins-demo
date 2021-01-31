@@ -94,7 +94,7 @@
                 </executions>
                 <configuration>
                     <imageName>${project.artifactId}:${project.version}</imageName>
-                    <dockerHost>http://120.79.174.128:2375</dockerHost>
+                    <dockerHost>http://192.168.0.128:2375</dockerHost>
                     <!-- 指定 Dockerfile 路径-->
                     <!--<dockerDirectory>${basedir}/docker</dockerDirectory>-->
                     <baseImage>java:8</baseImage>

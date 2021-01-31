@@ -3,22 +3,22 @@ node("master"){
 
 	// 工程名
 	def projectName='eureka-server'
+	// 版本
+	def version='0.0.1-SNAPSHOT'
+	// 工程启动端口
+    def port='8001'
 	// 工程部署目标服务器ip
 	def deployIp='192.168.0.128'
-	// 工程启动端口
-	def port='8001'
-	// 环境
-	def env='master'
-	// 工程路径
+	// 项目检出工程路径
 	def basePath='/home/cloud'
 
 	stage('Checkout'){
-		checkout([$class: 'GitSCM', branches: [[name: '*/master']],  doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'b13a6e27-0356-4fd6-9589-5aa0f3b4ccf2', url: 'http://10.255.11.12:8083/hsxt/sjpt/crl-as-sjpt.git']]])
+		checkout([$class: 'GitSCM', branches: [[name: '*/master']],  doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: '747ab03a-a77d-49a7-b1cf-c9a6fb0b37c2', url: 'https://github.com/tby6686/jenkins-demo.git']]])
 	}
 
 	stage('Archive Artefact'){
 	    checkChange()
-		sh "mvn clean package -Dmaven.test.skip=true"
+		sh "mvn clean package -Dmaven.test.skip=true -DskipDockerTag"
 	}
 
     stage('Deploy to $env'){
@@ -26,7 +26,7 @@ node("master"){
         sh "rm -rf $basePath/$projectName-$env/ "
         sh "cp -r ./ $basePath/$projectName-$env/ "
         withEnv(['JENKINS_NODE_COOKIE=dontKillMe']){
-            sh "cd $basePath/$projectName-$env/script; chmod +x go.sh; ./go.sh $env $port $projectName "
+            sh "cd $basePath/$projectName-$env/script; chmod +x docker-run.sh; ./docker-run.sh $projectName $version $port "
         }
     }
 }
