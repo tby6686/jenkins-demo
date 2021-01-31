@@ -7,8 +7,8 @@
 #!/usr/bin/env bash
 
 app_name=$1
-port=$2
-version=$3
+version=$2
+port=$3
 
 #!/usr/bin/env bash
 docker stop ${app_name}
