@@ -13,7 +13,7 @@ node("master"){
 	def basePath='/home/cloud'
 
 	stage('Checkout'){
-		checkout([$class: 'GitSCM', branches: [[name: '*/master']],  doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: '747ab03a-a77d-49a7-b1cf-c9a6fb0b37c2', url: 'https://github.com/tby6686/jenkins-demo.git']]])
+		checkout([$class: 'GitSCM', branches: [[name: '*/master']],  doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: '3649dd5a-f380-4c53-918c-9a3752512995', url: 'https://github.com/tby6686/jenkins-demo.git']]])
 	}
 
 	stage('Archive Artefact'){
