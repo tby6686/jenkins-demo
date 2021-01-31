@@ -12,6 +12,8 @@ node("master"){
 	// 项目检出工程路径
 	def basePath='/home/cloud'
 
+	def env='master'
+
 	stage('Checkout'){
 		checkout([$class: 'GitSCM', branches: [[name: '*/master']],  doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'f5494c86-0cb1-4b65-bb0d-81db1d33bc11', url: 'https://github.com/tby6686/jenkins-demo.git']]])
 	}
